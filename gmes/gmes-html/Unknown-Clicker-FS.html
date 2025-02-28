@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unknown-Cliker</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background: black;
+            font-family: 'Trebuchet MS', sans-serif;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Bubble Background */
+        .bubbles {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .bubble {
+            position: absolute;
+            bottom: -100px;
+            background-color: rgba(255, 255, 255, 1);
+            border-radius: 50%;
+            opacity: 100%;
+            animation: rise 5s infinite ease-in;
+        }
+
+        @keyframes rise {
+            0% {
+                transform: translateY(0);
+                opacity: 0.6;
+            }
+            100% {
+                transform: translateY(-120vh);
+                opacity: 0;
+            }
+        }
+
+        /* Bubble Size and Positioning */
+        .bubble {
+            width: 15px;
+            height: 15px;
+            animation-duration: 3s;
+            animation-delay: calc(0.5s * var(--i));
+            left: calc(10% + (var(--i) * 8%));
+        }
+
+        .bubble:nth-child(odd) {
+            width: 10px;
+            height: 10px;
+            animation-duration: 2.5s;
+        }
+
+        .bubble:nth-child(even) {
+            width: 20px;
+            height: 20px;
+            animation-duration: 4s;
+        }
+
+        .bubble:nth-child(odd):hover {
+            background-color: rgba(255, 255, 255, 0.8);
+        }
+
+        .clicker-container {
+            text-align: center;
+            border-radius: 20px;
+            padding: 20px;
+            background-color: rgba(0, 0, 0, 0.8);
+            box-shadow: 0px 0px 20px rgba(255, 255, 255, 0.2);
+            z-index: 1;
+        }
+
+        .clicker-btn {
+            background: #333;
+            color: white;
+            padding: 20px;
+            font-size: 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.4);
+            transition: transform 0.1s ease-in-out;
+        }
+
+        .clicker-btn:hover {
+            background: #555;
+        }
+
+        .clicker-btn:active {
+            transform: scale(0.95);
+        }
+
+        .counter {
+            font-size: 2rem;
+            margin: 20px 0;
+        }
+
+        .info {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+        }
+
+        .upgrade-btn, .autoclick-btn {
+            background: #222;
+            color: white;
+            padding: 10px;
+            font-size: 18px;
+            margin-top: 10px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0px 0px 10px rgba(255, 255, 255, 0.2);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .upgrade-btn:hover, .autoclick-btn:hover {
+            background: #444;
+        }
+
+        .upgrade-btn:disabled, .autoclick-btn:disabled {
+            background: #555;
+            cursor: not-allowed;
+        }
+
+        .upgrade-btn.enabled, .autoclick-btn.enabled {
+            background: #444;
+            box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.6);
+        }
+
+        .upgrade-btn.enabled:hover, .autoclick-btn.enabled:hover {
+            background: #666;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Bubble Background -->
+    <div class="bubbles">
+        <div class="bubble" style="--i: 1;"></div>
+        <div class="bubble" style="--i: 2;"></div>
+        <div class="bubble" style="--i: 3;"></div>
+        <div class="bubble" style="--i: 4;"></div>
+        <div class="bubble" style="--i: 5;"></div>
+        <div class="bubble" style="--i: 6;"></div>
+        <div class="bubble" style="--i: 7;"></div>
+        <div class="bubble" style="--i: 8;"></div>
+        <div class="bubble" style="--i: 9;"></div>
+        <div class="bubble" style="--i: 10;"></div>
+        <div class="bubble" style="--i: 11;"></div>
+        <div class="bubble" style="--i: 12;"></div>
+        <div class="bubble" style="--i: 13;"></div>
+        <div class="bubble" style="--i: 14;"></div>
+        <div class="bubble" style="--i: 15;"></div>
+    </div>
+
+    <div class="clicker-container">
+        <button class="clicker-btn" onclick="clickMystic()">Click Me!</button>
+        <div class="counter">0 Clicks</div>
+        <div class="info">
+            <div>Clicks per Click: <span id="click-per-click">1</span></div>
+            <div>Clicks per Second: <span id="click-per-second">0</span></div>
+        </div>
+        <button class="upgrade-btn" id="upgrade-btn" onclick="upgradeClick()" disabled>Upgrade (Cost: 10 Clicks)</button>
+        <button class="autoclick-btn" id="autoclick-btn" onclick="buyAutoClicker()" disabled>Buy Auto Clicker (Cost: 50 Clicks)</button>
+    </div>
+
+    <script>
+        let clickCount = 0;
+        let clickValue = 1;
+        let upgradeCost = 10;
+        let autoClickerCost = 50;
+        let clicksPerSecond = 0;
+
+        const counter = document.querySelector('.counter');
+        const clickPerClickDisplay = document.getElementById('click-per-click');
+        const clickPerSecondDisplay = document.getElementById('click-per-second');
+        const upgradeBtn = document.getElementById('upgrade-btn');
+        const autoClickBtn = document.getElementById('autoclick-btn');
+
+        function clickMystic() {
+            clickCount += clickValue;
+            counter.textContent = clickCount + ' Clicks';
+            checkUpgradeAvailability();
+            checkAutoClickerAvailability();
+        }
+
+        function checkUpgradeAvailability() {
+            if (clickCount >= upgradeCost) {
+                upgradeBtn.disabled = false;
+                upgradeBtn.classList.add('enabled');
+            } else {
+                upgradeBtn.disabled = true;
+                upgradeBtn.classList.remove('enabled');
+            }
+        }
+
+        function checkAutoClickerAvailability() {
+            if (clickCount >= autoClickerCost) {
+                autoClickBtn.disabled = false;
+                autoClickBtn.classList.add('enabled');
+            } else {
+                autoClickBtn.disabled = true;
+                autoClickBtn.classList.remove('enabled');
+            }
+        }
+
+        function upgradeClick() {
+            if (clickCount >= upgradeCost) {
+                clickCount -= upgradeCost;
+                clickValue += 1;
+                upgradeCost = Math.floor(upgradeCost * 1.5);
+                counter.textContent = clickCount + ' Clicks';
+                clickPerClickDisplay.textContent = clickValue;
+                upgradeBtn.textContent = 'Upgrade (Cost: ' + upgradeCost + ' Clicks)';
+                checkUpgradeAvailability();
+                checkAutoClickerAvailability();
+            }
+        }
+
+        function buyAutoClicker() {
+            if (clickCount >= autoClickerCost) {
+                clickCount -= autoClickerCost;
+                clicksPerSecond += 1;
+                autoClickerCost = Math.floor(autoClickerCost * 1.7); // Increase cost for the next auto clicker
+                counter.textContent = clickCount + ' Clicks';
+                clickPerSecondDisplay.textContent = clicksPerSecond;
+                autoClickBtn.textContent = 'Buy Auto Clicker (Cost: ' + autoClickerCost + ' Clicks)';
+                checkUpgradeAvailability();
+                checkAutoClickerAvailability();
+
+                // Start the auto clicker if it's the first one purchased
+                if (clicksPerSecond === 1) {
+                    setInterval(() => {
+                        clickMystic();
+                    }, 1000);
+                }
+            }
+        }
+    </script>
+
+</body>
+</html>
